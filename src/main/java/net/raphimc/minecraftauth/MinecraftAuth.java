@@ -17,7 +17,6 @@ import net.raphimc.minecraftauth.step.java.StepPlayerCertificates;
 import net.raphimc.minecraftauth.step.java.session.StepFullJavaSession;
 import net.raphimc.minecraftauth.step.msa.MsaCodeStep;
 import net.raphimc.minecraftauth.step.msa.StepCredentialsMsaCode;
-import net.raphimc.minecraftauth.step.msa.StepJfxWebViewMsaCode;
 import net.raphimc.minecraftauth.step.msa.StepLocalWebServer;
 import net.raphimc.minecraftauth.step.msa.StepLocalWebServerMsaCode;
 import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
@@ -233,7 +232,11 @@ public class MinecraftAuth {
                this.applicationDetails = this.applicationDetails.withRedirectUri(this.applicationDetails.getOAuthEnvironment().getNativeClientUrl());
             }
 
-            Constructor<?> constructor = StepJfxWebViewMsaCode.class.getConstructor(AbstractStep.ApplicationDetails.class, int.class);
+            // Android build: the JavaFX webview step class was removed (JavaFX does
+            // not exist on Android); resolve it by reflection so the class still
+            // loads without JavaFX on the compile classpath.
+            Class<?> stepClass = Class.forName("net.raphimc.minecraftauth.step.msa.StepJfxWebViewMsaCode");
+            Constructor<?> constructor = stepClass.getConstructor(AbstractStep.ApplicationDetails.class, int.class);
             this.msaCodeStep = (AbstractStep<?, MsaCodeStep.MsaCode>)constructor.newInstance(this.applicationDetails, this.timeout * 1000);
             return new MinecraftAuth.InitialXblSessionBuilder(this);
          } catch (Throwable e) {

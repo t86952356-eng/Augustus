@@ -19,7 +19,13 @@ java {
     }
 }
 
+
 repositories {
+    // Aliyun mirror first: mavenCentral rate-limits this network (HTTP 429)
+    maven {
+        name = 'AliyunPublic'
+        url = uri('https://maven.aliyun.com/repository/public')
+    }
     mavenCentral()
     maven {
         name = 'Minecraft'
@@ -156,14 +162,14 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.17'
 
     implementation 'io.netty:netty-all:4.1.118.Final'
-    implementation 'com.github.oshi:oshi-core:6.6.3'
     implementation 'net.java.dev.jna:jna:5.15.0'
-    implementation 'net.java.dev.jna:jna-platform:5.15.0'
     implementation 'it.unimi.dsi:fastutil:8.5.15'
     implementation 'org.jctools:jctools-core:4.0.5'
 
     // Client libraries
-    implementation 'com.microsoft.onnxruntime:onnxruntime:1.20.0'
+    // Android build: ONNX Runtime, OpenJFX, oshi and jna-platform removed
+    // (no Android natives / pure dead weight); corresponding code paths are
+    // guarded in source.
     implementation 'org.yaml:snakeyaml:2.5'
     implementation 'org.json:json:20160810'
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
@@ -175,25 +181,18 @@ dependencies {
         exclude group: 'org.jcraft'
     }
 
-    // JvmDowngrader CLI tool & Java 8 runtime stubs for downgraded ViaVersion / OpenJFX bytecode
+    // JvmDowngrader CLI tool & Java 8 runtime stubs for downgraded ViaVersion bytecode
     jvmdgTool 'xyz.wagyourtail.jvmdowngrader:jvmdowngrader:2.0.1'
     jvmdgTool 'xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:2.0.1'
     implementation 'xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:2.0.1:downgraded-8'
 
     // Java 11+/17+ dependencies downgraded automatically to Java 8 bytecode via downgradeJava8Deps
+    // Android build: OpenJFX downgrades removed (JavaFX has no Android natives)
     java8Downgrade('com.viaversion:viaversion-common:5.7.1') { transitive = false }
     java8Downgrade('com.viaversion:viabackwards-common:5.7.1') { transitive = false }
     java8Downgrade('com.viaversion:viarewind-common:4.0.14') { transitive = false }
     java8Downgrade('com.viaversion:viaaprilfools-common:4.0.8') { transitive = false }
     java8Downgrade('com.viaversion:nbt:5.1.2') { transitive = false }
-
-    java8Downgrade("org.openjfx:javafx-base:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-graphics:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-controls:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-fxml:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-media:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-swing:11.0.2:${jfxClassifier}") { transitive = false }
-    java8Downgrade("org.openjfx:javafx-web:11.0.2:${jfxClassifier}") { transitive = false }
 
     implementation files(fileTree(downgradedDepsDir) { include '*.jar' }).builtBy(downgradeJava8Deps)
 }

@@ -169,17 +169,20 @@ public class ClientFileUtil {
    }
 
    public static void moveToTrashOrDelete(File file) {
-      com.sun.jna.platform.FileUtils instance = com.sun.jna.platform.FileUtils.getInstance();
-      if (!instance.hasTrash()) {
-         System.out.println("No trash bin available");
-         file.delete();
-      } else {
-         try {
-            instance.moveToTrash(new File[]{file});
-         } catch (Throwable e) {
-            System.out.println("Failed to move file to trash bin.");
+      // Android build: JNA's desktop trash-bin API does not exist on Android,
+      // so just delete the file directly (never crash on missing natives).
+      try {
+         if (!file.delete() && file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+               for (File child : children) {
+                  moveToTrashOrDelete(child);
+               }
+            }
             file.delete();
          }
+      } catch (Throwable e) {
+         System.out.println("Failed to delete file: " + file.getName());
       }
    }
 

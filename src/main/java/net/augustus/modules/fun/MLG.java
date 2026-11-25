@@ -177,6 +177,12 @@ public class MLG extends Module implements LoadWorldListener, WorldColorListener
    }
 
    private void spawnRandomGifOverlay() {
+      // Android build: gif overlays are not bundled (24 MB of meme assets);
+      // keep the module functional when the gif list is empty.
+      if (this.allGifSequences.isEmpty()) {
+         return;
+      }
+
       if (this.unusedGifQueue.isEmpty()) {
          this.unusedGifQueue.addAll(this.allGifSequences);
       }

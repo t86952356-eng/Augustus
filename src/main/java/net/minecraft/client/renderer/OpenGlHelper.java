@@ -24,9 +24,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLContext;
-import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
-import oshi.hardware.CentralProcessor.ProcessorIdentifier;
 
 public class OpenGlHelper {
    public static boolean nvidia;
@@ -686,10 +683,10 @@ public class OpenGlHelper {
          }
       }
 
+      // Android build: oshi (desktop system-info via JNA) is not bundled;
+      // fall back to JVM-visible processor info without native queries.
       try {
-         CentralProcessor processor = new SystemInfo().getHardware().getProcessor();
-         ProcessorIdentifier processorIdentifier = processor.getProcessorIdentifier();
-         cpu = String.format("%dx %s", processor.getPhysicalProcessors().size(), processorIdentifier.getName()).replaceAll("\\s+", " ");
+         cpu = String.format("%dx %s", Runtime.getRuntime().availableProcessors(), System.getProperty("os.arch", "unknown")).replaceAll("\\s+", " ");
       } catch (Throwable e) {
          e.printStackTrace();
       }

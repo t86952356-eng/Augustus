@@ -15,10 +15,24 @@ public class SystemTrayNotifier {
    private static TrayIcon trayIcon;
 
    public static void displayNotification(String str, String str2) {
-      trayIcon.displayMessage(str, str2, MessageType.INFO);
+      try {
+         if (trayIcon != null) {
+            trayIcon.displayMessage(str, str2, MessageType.INFO);
+         }
+      } catch (Throwable t) {
+      }
    }
 
    public static void init() {
+      // Android build: java.awt SystemTray does not exist on Android (headless
+      // JVM). Guard everything so client initialization never breaks.
+      try {
+         if (!SystemTray.isSupported()) {
+            return;
+         }
+      } catch (Throwable t) {
+         return;
+      }
 
       try {
          trayIcon = new TrayIcon(
@@ -29,7 +43,7 @@ public class SystemTrayNotifier {
             ),
             "Augustus Message"
          );
-      } catch (IOException e) {
+      } catch (Throwable e) {
       }
 
       try {
@@ -39,7 +53,7 @@ public class SystemTrayNotifier {
          if (SystemTray.isSupported()) {
             systemTray.add(trayIcon);
          }
-      } catch (AWTException e2) {
+      } catch (Throwable e2) {
       }
    }
 }

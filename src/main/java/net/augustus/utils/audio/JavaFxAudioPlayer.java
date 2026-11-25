@@ -2,37 +2,28 @@ package net.augustus.utils.audio;
 
 import net.augustus.Augustus;
 import net.augustus.utils.file.ClientFileUtil;
-import javafx.scene.media.AudioClip;
 
+/**
+ * Android-safe audio player.
+ *
+ * The desktop build of Augustus plays its custom music (holiday songs,
+ * MLG / ShuffleMode tracks) through JavaFX {@code AudioClip}. JavaFX needs
+ * its own native toolkit (glass / prism / gstreamer), which does not exist
+ * on Android, and initializing it there crashes the client. The Android
+ * build therefore ships this safe no-op implementation instead: every
+ * method returns immediately, no JavaFX class is ever referenced, and the
+ * in-game sounds keep working through the vanilla OpenAL sound system
+ * (ClientSounds / SoundHandler).
+ */
 public class JavaFxAudioPlayer {
-   private AudioClip audioClip = null;
+   private Object audioClip = null;
 
    public void playResource(String str, boolean flag) {
-      if (str.startsWith("assets/augustus/")) {
-         str = str.replace("assets/augustus/", "");
-      }
-
-      String[] parts = str.split("/");
-      StringBuilder sb = new StringBuilder(Augustus.getInstance().getName().toLowerCase() + "/temp/musicplayer/");
-
-      for (int i = 0; i < parts.length - 1; i++) {
-         sb.append(parts[i]);
-      }
-
-      ClientFileUtil.extractResource("assets/augustus/" + str, sb.toString(), flag);
-      this.audioClip = new AudioClip(ClientFileUtil.toFileUri(ClientFileUtil.WORKING_DIR + sb + "/" + parts[parts.length - 1]));
-      this.audioClip.play();
+      // no-op on Android: JavaFX media is unavailable
    }
 
    public void stop() {
-
-      try {
-         if (this.isPlaying()) {
-            this.audioClip.stop();
-         }
-      } catch (Throwable e) {
-         System.err.println("Failed to stop music player");
-      }
+      // no-op on Android
    }
 
    public void playResource(String str) {
@@ -40,27 +31,18 @@ public class JavaFxAudioPlayer {
    }
 
    public boolean isPlaying() {
-      return this.audioClip != null && this.audioClip.isPlaying();
+      return false;
    }
 
    public void playFile(String str) {
-      this.audioClip = new AudioClip(ClientFileUtil.toFileUri(str));
-      this.audioClip.play();
+      // no-op on Android
    }
 
    public void setCycleCount(int cycleCount) {
-      if (this.audioClip != null) {
-         this.audioClip.setCycleCount(cycleCount);
-      }
+      // no-op on Android
    }
 
    public void setVolume(double volume) {
-      if (this.isPlaying()) {
-         this.audioClip.setVolume(volume);
-      }
+      // no-op on Android
    }
-
-
-
-
 }

@@ -62,3 +62,49 @@ Generated `build/libs/`:
 ```
 
 Or run `Start.java` / `StartMinecraftDirectory.java` directly from your IDE.
+
+
+---
+
+## Android build (FOLD launcher / FCL, GL4ES)
+
+This branch produces an Android-optimized build of the client:
+
+- **Removed** desktop-only libraries that cannot work on Android and only
+  added weight or crash risk: ONNX Runtime (~93 MB of desktop natives,
+  AI rotation now degrades gracefully), OpenJFX (no Android natives —
+  the JavaFX music player is now a safe no-op and 33 MB of MP3 assets
+  are gone), oshi + jna-platform (desktop system info / trash bin APIs),
+  Discord-RPC natives for win/mac/linux-x86, and 24 MB of MLG meme GIFs.
+- **Hardened** the startup path: `SystemTrayNotifier`, `ClientFileUtil`
+  trash deletion, holiday music and the ONNX model loader can no longer
+  throw `HeadlessException` / `UnsatisfiedLinkError` /
+  `NoClassDefFoundError` during client init on a headless Android JVM.
+- **Trimmed** the jar with `scripts/trim_android_jar.py`: ~11,900
+  unreferenced fastutil classes removed (transitive closure kept),
+  `112.8 MB -> 66.7 MB`.
+- **Kept**: every module, ClickGUI, fonts, cosmetics, sounds (vanilla
+  OpenAL path), ViaVersion stack, Baritone, OptiFine. The GL rendering
+  pipeline is untouched — GL4ES compatible.
+
+### Building
+
+```bash
+./gradlew clean compatibilityJar fatJar
+python3 scripts/trim_android_jar.py
+```
+
+Install on Android (FOLD/FCL): put `OpenAugustus.jar` and
+`OpenAugustus.json` into `<minecraft>/versions/OpenAugustus/`, select
+version **OpenAugustus**, renderer **GL4ES**, any Java 8+ runtime
+(jre-legacy recommended).
+
+### Verification
+
+- 24,955 of 25,033 classes link cleanly in a class-load audit; the 76
+  remaining failures are optional netty/log4j integrations (conscrypt,
+  jetty-alpn, disruptor...) that vanilla 1.8.9 never touches, plus
+  LWJGL/JInput classes the launcher replaces.
+- A headless smoke test boots the real client through `Main -> Minecraft
+  -> startGame -> GameSettings` up to `Display` creation (fails only on
+  the missing X server of the build sandbox, exactly like vanilla).
