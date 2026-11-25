@@ -141,8 +141,16 @@ public class Shadow extends Module implements TickListener, RenderEntityListener
       this.lastCustomColorEnabled = this.customColor.getValue();
    }
 
+   public boolean isShadowRenderAvailable() {
+      return this.shadowShader != null && this.shadowShader.isUsable();
+   }
+
    @Override
    public void onRenderEntity(EventRenderEntity event) {
+      if (!this.isShadowRenderAvailable()) {
+         return;
+      }
+
       if (this.shadowEntities.getValue() && (!ClientManagers.moduleManager.esp.isToggled() || !EspRenderModeOption.VANILLA.isSelected())) {
          EntityLivingBase entity = event.getEntity();
          if (this.entities.getTargetFilter().matches(entity)) {
@@ -188,6 +196,10 @@ public class Shadow extends Module implements TickListener, RenderEntityListener
    }
 
    public void renderShadowOverlay(ScaledResolution sr) {
+      if (!this.isShadowRenderAvailable()) {
+         return;
+      }
+
       if (Display.isActive()) {
          this.renderToShadowMask(() -> Gui.drawRect(-2001, -2001, -2000, -2000, Color.red.getRGB()), false);
          GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

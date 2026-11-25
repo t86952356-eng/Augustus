@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'net.augustus'
-version = 'b4.23.3'
+version = 'b4.23.4'
 
 def currentOs = OperatingSystem.current()
 def osClassifier = currentOs.isWindows() ? 'windows' : (currentOs.isMacOsX() ? 'osx' : 'linux')

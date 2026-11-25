@@ -3,7 +3,10 @@
 /**
  * Rounded Rectangle Shader with Distance Field Antialiasing
  * Perfect smooth edges at any resolution
+ * GL4ES-safe: no gl_TexCoord array, uses a custom varying instead.
  */
+
+varying vec2 vUv;
 
 uniform vec2 size;          // Full size of rectangle (width, height)
 uniform float radius;       // Corner radius (used when cornerRadius is not set)
@@ -57,7 +60,7 @@ float aastep(float threshold, float value) {
 
 void main() {
     // Get fragment coordinates from texture coordinates
-    vec2 uv = gl_TexCoord[0].xy;
+    vec2 uv = vUv;
 
     // Convert UV [0,1] to actual pixel coordinates
     vec2 pixelPos = uv * size;

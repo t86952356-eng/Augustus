@@ -2,6 +2,7 @@ package net.augustus.utils.shader;
 
 import net.augustus.Augustus;
 import net.augustus.utils.render.GlStateSaver;
+import net.augustus.utils.render.Gl4esCompat;
 import net.augustus.utils.render.RenderSystemAssetLoader;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -28,7 +29,7 @@ public class BackgroundShader implements MC {
    }
 
    public void render(float f) {
-      if (this.shaderProgram != null) {
+      if (this.shaderProgram != null && this.shaderProgram.isUsable()) {
          this.shaderProgram.bind();
          float f2 = (float)(System.currentTimeMillis() - this.startTimeMs) / f;
          String str = "time";
@@ -57,8 +58,12 @@ public class BackgroundShader implements MC {
       }
    }
 
+   public boolean isReady() {
+      return this.shaderProgram != null && this.shaderProgram.isUsable();
+   }
+
    public void loadFromFile(String str, String str2) {
-      if (this.shaderProgram == null) {
+      if (this.shaderProgram == null && !Gl4esCompat.isGl4es()) {
          try {
             this.shaderProgram = new ShaderProgram(this.vertexShaderSource, this.readFileSource(str));
          } catch (RuntimeException e) {
@@ -106,7 +111,7 @@ public class BackgroundShader implements MC {
    }
 
    public void loadFromResource(String str) {
-      if (this.shaderProgram == null) {
+      if (this.shaderProgram == null && !Gl4esCompat.isGl4es()) {
          this.shaderProgram = new ShaderProgram(this.vertexShaderSource, this.loadResourceSource(str));
          this.startTimeMs = System.currentTimeMillis();
       }

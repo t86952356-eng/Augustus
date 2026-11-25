@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 public class DynamicFontUtil extends CustomFontUtil {
    private File fontFile;
@@ -27,11 +26,6 @@ public class DynamicFontUtil extends CustomFontUtil {
       this.sizedFontCache = new Int2ObjectOpenHashMap();
       this.currentFontSize = this.awtFont.getSize();
       this.fontFile = file;
-      CompletableFuture.runAsync(() -> this.preloadFileFontsAsync(n2));
-   }
-
-   private void preloadFileFontsAsync(int n) {
-      this.preloadFontSizes(n);
    }
 
    private void preloadFontSizes(int n) {
@@ -90,11 +84,6 @@ public class DynamicFontUtil extends CustomFontUtil {
       this.sizedFontCache = new Int2ObjectOpenHashMap();
       this.currentFontSize = this.awtFont.getSize();
       this.resourcePath = str2;
-      CompletableFuture.runAsync(() -> this.preloadResourceFontsAsync(n2));
-   }
-
-   private void preloadResourceFontsAsync(int n) {
-      this.preloadFontSizes(n);
    }
 
 }

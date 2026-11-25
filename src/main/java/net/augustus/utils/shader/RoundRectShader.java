@@ -10,12 +10,18 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 public class RoundRectShader {
    private boolean wasBlendEnabled;
    private boolean wasTexture2DEnabled;
-   private final ShaderProgram shaderProgram;
+   private ShaderProgram shaderProgram;
    private boolean wasAlphaEnabled;
    private static RoundRectShader instance;
 
    public void drawRoundedRect(float f, float f2, float f3, float f4, float f5, int n) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, false, 0.0F);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -61,6 +67,12 @@ public class RoundRectShader {
       float f, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, int n
    ) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, true, f5);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -85,6 +97,12 @@ public class RoundRectShader {
       float f, float f2, float f3, float f4, float f5, float f6, boolean flag, boolean flag2, boolean flag3, boolean flag4, int n
    ) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, true, f6);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -111,6 +129,12 @@ public class RoundRectShader {
 
    public void drawRoundedRect(float f, float f2, float f3, float f4, float f5, float f6, float f7, float f8, int n) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, false, 0.0F);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -138,15 +162,65 @@ public class RoundRectShader {
 
    private RoundRectShader() {
        super();
+      this.shaderProgram = null;
 
       try {
-         this.shaderProgram = new ShaderProgram(RenderSystemAssetLoader.loadAssetString("roundrect.vert"), RenderSystemAssetLoader.loadAssetString("roundrect.frag"));
-         System.out.println("[RoundRectShader] Shader loaded successfully!");
-      } catch (Exception e) {
-         System.err.println("[RoundRectShader] Failed to load shader:");
-         e.printStackTrace();
-         throw new RuntimeException("Failed to initialize RoundRectShader", e);
+         ShaderProgram program = new ShaderProgram(RenderSystemAssetLoader.loadAssetString("roundrect.vert"), RenderSystemAssetLoader.loadAssetString("roundrect.frag"));
+         if (program.isUsable()) {
+            this.shaderProgram = program;
+            System.out.println("[RoundRectShader] Shader loaded successfully!");
+         } else {
+            System.out.println("[RoundRectShader] Rounded-rect shader is not available on this renderer, using sharp-corner fallback");
+         }
+      } catch (Throwable t) {
+         System.err.println("[RoundRectShader] Failed to load shader, using sharp-corner fallback:");
+         t.printStackTrace();
       }
+   }
+
+   private boolean isShaderUsable() {
+      return this.shaderProgram != null && this.shaderProgram.isUsable();
+   }
+
+   private void drawFallbackRect(float f, float f2, float f3, float f4, int n, boolean outline, float lineWidth) {
+      float f5 = lineWidth > 0.0F ? (lineWidth > 4.0F ? 4.0F : lineWidth) : 1.0F;
+      float f6 = (float)(n >> 24 & 0xFF) / 255.0F;
+      float f7 = (float)(n >> 16 & 0xFF) / 255.0F;
+      float f8 = (float)(n >> 8 & 0xFF) / 255.0F;
+      float f9 = (float)(n & 0xFF) / 255.0F;
+      if (f6 == 0.0F && n != 0) {
+         f6 = 1.0F;
+      }
+
+      GlStateManager.color(f7, f8, f9, f6);
+      Tessellator instance2 = Tessellator.getInstance();
+      WorldRenderer worldRenderer = instance2.getWorldRenderer();
+      worldRenderer.begin(7, DefaultVertexFormats.POSITION);
+      if (outline) {
+         worldRenderer.pos((double)f, (double)(f2 + f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)f2, 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)f2, 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)(f2 + f4), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f4), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f5), (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f5), (double)(f2 + f5), 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)(f2 + f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3 - f5), (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f4 - f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f5), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3 - f5), (double)(f2 + f5), 0.0).endVertex();
+      } else {
+         worldRenderer.pos((double)f, (double)(f2 + f4), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)(f2 + f4), 0.0).endVertex();
+         worldRenderer.pos((double)(f + f3), (double)f2, 0.0).endVertex();
+         worldRenderer.pos((double)f, (double)f2, 0.0).endVertex();
+      }
+
+      instance2.draw();
    }
 
    private void popGlState() {
@@ -207,6 +281,12 @@ public class RoundRectShader {
 
    public void drawRoundedOutline(float f, float f2, float f3, float f4, float f5, float f6, int n) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, true, f6);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -244,6 +324,12 @@ public class RoundRectShader {
 
    public void drawRoundedRect(float f, float f2, float f3, float f4, float f5, boolean flag, boolean flag2, boolean flag3, boolean flag4, int n) {
       this.pushGlState();
+      if (!this.isShaderUsable()) {
+         this.drawFallbackRect(f, f2, f3, f4, n, false, 0.0F);
+         this.popGlState();
+         return;
+      }
+
       this.shaderProgram.bind();
       String str = "size";
       this.shaderProgram.setUniform2f(str, f3, f4);
@@ -268,7 +354,4 @@ public class RoundRectShader {
       this.shaderProgram.unbind();
       this.popGlState();
    }
-
-
-
 }

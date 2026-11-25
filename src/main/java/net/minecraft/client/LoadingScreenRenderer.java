@@ -89,7 +89,8 @@ public class LoadingScreenRenderer implements IProgressUpdate {
             Tessellator instance = Tessellator.getInstance();
             WorldRenderer worldRenderer = instance.getWorldRenderer();
             ClientSettings augustusServer = Augustus.getInstance().getModuleManager().clientSettings;
-            if (augustusServer.isToggled() && augustusServer.customBackground.getValue()) {
+            if (augustusServer.isToggled() && augustusServer.customBackground.getValue()
+               && Augustus.getInstance().getBackgroundShaderManager().isCurrentShaderReady()) {
                this.glStateSaver.setCull(false);
                this.glStateSaver.setTexture2D(true);
                this.glStateSaver.setBlend(false);

@@ -30,7 +30,15 @@ public class ResourceShaderProgram {
       }
    }
 
+   public boolean isUsable() {
+      return this.programId != 0 && this.vertexShaderId != -1 && this.fragmentShaderId != -1;
+   }
+
    public void unbind() {
+      if (!this.isUsable()) {
+         return;
+      }
+
       GL20.glUseProgram(0);
    }
 
@@ -57,6 +65,10 @@ public class ResourceShaderProgram {
    }
 
    public void delete() {
+      if (!this.isUsable()) {
+         return;
+      }
+
       GL20.glUseProgram(0);
       GL20.glDeleteProgram(this.programId);
       GL20.glDeleteShader(this.vertexShaderId);
@@ -64,6 +76,10 @@ public class ResourceShaderProgram {
    }
 
    public void drawFullscreenQuad(float f, float f2) {
+      if (!this.isUsable()) {
+         return;
+      }
+
       Tessellator instance = Tessellator.getInstance();
       WorldRenderer worldRenderer = instance.getWorldRenderer();
       worldRenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
@@ -93,6 +109,10 @@ public class ResourceShaderProgram {
    }
 
    public void bind() {
+      if (!this.isUsable()) {
+         return;
+      }
+
       GL20.glUseProgram(this.programId);
    }
 

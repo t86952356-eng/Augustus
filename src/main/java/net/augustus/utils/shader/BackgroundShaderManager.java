@@ -31,6 +31,11 @@ public class BackgroundShaderManager {
       return this.currentShader;
    }
 
+   public boolean isCurrentShaderReady() {
+      BackgroundShader backgroundShader = this.currentShader;
+      return backgroundShader != null && backgroundShader.isReady();
+   }
+
    private void extractResourceFile(String str, String str2, boolean flag) {
       if (str != null && !str.equals("")) {
          str = str.replace('\\', '/');

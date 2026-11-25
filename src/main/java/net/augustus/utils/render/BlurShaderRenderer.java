@@ -10,22 +10,37 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 public class BlurShaderRenderer {
+   private static final boolean BLUR_DISABLED = Gl4esCompat.isGl4es();
    private final GlStateSaver glStateSaver;
    private final Minecraft mc;
    private final Framebuffer guiMaskFramebuffer;
    private final Framebuffer hudMaskFramebuffer;
    private final ShaderProgram cutoutShader;
 
+   public static boolean isBlurAvailable() {
+      return !BLUR_DISABLED;
+   }
+
    public BlurShaderRenderer() {
        super();
       this.glStateSaver = GlStateSaver.create();
       this.mc = Minecraft.getMinecraft();
-      this.guiMaskFramebuffer = new ResizableFramebuffer(this.mc.displayWidth, this.mc.displayHeight, true);
-      this.hudMaskFramebuffer = new ResizableFramebuffer(this.mc.displayWidth, this.mc.displayHeight, true);
-      this.cutoutShader = new ShaderProgram(RenderSystemAssetLoader.loadAssetString("legacy.vert"), RenderSystemAssetLoader.loadAssetString("cutout.frag"));
+      if (BLUR_DISABLED) {
+         this.guiMaskFramebuffer = null;
+         this.hudMaskFramebuffer = null;
+         this.cutoutShader = null;
+      } else {
+         this.guiMaskFramebuffer = new ResizableFramebuffer(this.mc.displayWidth, this.mc.displayHeight, true);
+         this.hudMaskFramebuffer = new ResizableFramebuffer(this.mc.displayWidth, this.mc.displayHeight, true);
+         this.cutoutShader = new ShaderProgram(RenderSystemAssetLoader.loadAssetString("legacy.vert"), RenderSystemAssetLoader.loadAssetString("cutout.frag"));
+      }
    }
 
    public void endMaskCapture() {
+      if (BLUR_DISABLED) {
+         return;
+      }
+
       if (Config.isShaderPackLoaded()) {
          FramebufferStack.popFramebuffer();
       } else {
@@ -34,6 +49,10 @@ public class BlurShaderRenderer {
    }
 
    public void beginMaskCapture(boolean flag, boolean flag2) {
+      if (BLUR_DISABLED) {
+         return;
+      }
+
       if (Config.isShaderPackLoaded()) {
          FramebufferStack.pushFramebuffer();
       }
@@ -47,6 +66,10 @@ public class BlurShaderRenderer {
    }
 
    public void renderBlurPass(boolean flag, int n) {
+      if (BLUR_DISABLED || this.cutoutShader == null || !this.cutoutShader.isUsable()) {
+         return;
+      }
+
       if (Display.isActive()) {
          Framebuffer framebuffer = flag ? this.guiMaskFramebuffer : this.hudMaskFramebuffer;
          BlurMode blurMode = BlurMode.fromName(ClientManagers.moduleManager.blur.modesNew.getSelectedValue());

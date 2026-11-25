@@ -65,7 +65,7 @@ public class Notifications extends Module implements RenderListener {
    public void renderNotifications(boolean flag) {
       if (!NotificationManager.isEmpty()) {
          NotificationManager.updateNotifications();
-         if (this.blur.getValue() && !Config.isFastRender() && !Config.isAntialiasing() && !Config.isAnisotropicFiltering()) {
+         if (this.blur.getValue() && BlurShaderRenderer.isBlurAvailable() && !Config.isFastRender() && !Config.isAntialiasing() && !Config.isAnisotropicFiltering()) {
             BLUR_RENDERER.beginMaskCapture(true, flag);
             NotificationManager.renderNotifications();
             BLUR_RENDERER.endMaskCapture();

@@ -66,7 +66,7 @@ public final class BlurShadowManager {
    public static void submitRenderTask(boolean flag, RenderPassTask renderPassTask) {
       if (!isInRenderPass()) {
          if (isShadersCompatible() && !Shaders.isShadowPass) {
-            if (shadowState >= 1 && guiLayerState == 0) {
+            if (shadowState >= 1 && guiLayerState == 0 && ClientManagers.moduleManager.shadow.isShadowRenderAvailable()) {
                if (flag) {
                   ClientManagers.moduleManager.shadow.bindShadowMaskFramebuffer();
                   renderPassTask.execute(ShaderRenderPass.SHADOW);
@@ -257,7 +257,7 @@ public final class BlurShadowManager {
          }
 
          if (!flag) {
-            if (!shadowQueue.isEmpty()) {
+            if (!shadowQueue.isEmpty() && ClientManagers.moduleManager.shadow.isShadowRenderAvailable()) {
                ClientManagers.moduleManager.shadow.bindShadowMaskFramebuffer();
                enterRenderPass();
                ShaderRenderPass shadow = ShaderRenderPass.SHADOW;

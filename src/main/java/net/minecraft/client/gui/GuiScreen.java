@@ -428,7 +428,8 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback {
       this.glStateSaver.setTexture2D(true);
       this.glStateSaver.setBlend(false);
       ClientSettings augustusServer = Augustus.getInstance().getModuleManager().clientSettings;
-      if (augustusServer.isToggled() && augustusServer.customBackground.getValue()) {
+      if (augustusServer.isToggled() && augustusServer.customBackground.getValue()
+         && Augustus.getInstance().getBackgroundShaderManager().isCurrentShaderReady()) {
          Augustus.getInstance().getBackgroundShaderManager().getCurrentShader().render(1800.0F);
       } else {
          GlStateManager.disableLighting();

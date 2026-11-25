@@ -651,21 +651,19 @@ public class StaffDetector extends Module implements LoadWorldListener, RenderLi
    }
 
    private void extractDefaultStaffLists() {
-      String str = Augustus.getInstance().getName().toLowerCase() + "/stafflists";
+      String str = Augustus.getInstance().getName().toLowerCase() + "/staffLists";
       String str2 = str;
-      ClientFileUtil.extractResource("assets/augustus/stafflists/BlocksMCDefault.txt", str2, true);
-      str = Augustus.getInstance().getName().toLowerCase() + "/stafflists";
-      String str3 = str;
-      ClientFileUtil.extractResource("assets/augustus/stafflists/HypixelDefault.txt", str3, true);
-      str = Augustus.getInstance().getName().toLowerCase() + "/stafflists";
-      String str4 = str;
-      ClientFileUtil.extractResource("assets/augustus/stafflists/GamsterDefault.txt", str4, true);
-      str = Augustus.getInstance().getName().toLowerCase() + "/stafflists";
-      String str5 = str;
-      ClientFileUtil.extractResource("assets/augustus/stafflists/GommeHDDefault.txt", str5, true);
-      str = Augustus.getInstance().getName().toLowerCase() + "/stafflists";
-      String str6 = str;
-      ClientFileUtil.extractResource("assets/augustus/stafflists/PikaDefault.txt", str6, true);
+
+      try {
+         ClientFileUtil.extractResource("assets/augustus/stafflists/BlocksMCDefault.txt", str2, true);
+         ClientFileUtil.extractResource("assets/augustus/stafflists/HypixelDefault.txt", str2, true);
+         ClientFileUtil.extractResource("assets/augustus/stafflists/GamsterDefault.txt", str2, true);
+         ClientFileUtil.extractResource("assets/augustus/stafflists/GommeHDDefault.txt", str2, true);
+         ClientFileUtil.extractResource("assets/augustus/stafflists/PikaDefault.txt", str2, true);
+      } catch (Throwable t) {
+         System.err.println("[Augustus] Could not extract default staff lists: " + t);
+      }
+
       this.refreshStaffListOptions();
    }
 
@@ -679,7 +677,7 @@ public class StaffDetector extends Module implements LoadWorldListener, RenderLi
          }).map(file3 -> file3.getName().substring(0, Math.max(0, file3.getName().length() - 4))).collect(Collectors.toList());
          boolean flag = list.contains(this.lists.getSelectedValue());
          String[] strings = (String[])list.toArray(new String[0]);
-         if (!flag) {
+         if (!flag && strings.length > 0) {
             String str = strings[0];
             this.lists.setSelectedValue(str);
          }
